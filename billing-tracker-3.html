@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Billing Tracker</title>
+<style>
+  :root{--ink:#12211c;--paper:#f3efe6;--card:#fbf9f4;--line:#d8d0c0;--moss:#2f6b4f;--moss-2:#4a8b6a;--clay:#c46a45;--amber:#d99b2b;--muted:#6c6455;--behind:#c1553a;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--paper);color:var(--ink);font-family:"Helvetica Neue",Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  body{padding:20px 16px 80px;max-width:760px;margin:0 auto}
+  .eyebrow{font-size:11px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:700}
+  h1{font-family:Georgia,serif;font-weight:800;font-size:30px;line-height:1.02;margin:6px 0 2px}
+  h1 .amt{color:var(--moss)}
+  .sub{color:var(--muted);font-size:13px;margin-bottom:20px}
+  .hero{background:var(--ink);color:var(--paper);border-radius:16px;padding:22px 20px;margin-bottom:14px}
+  .hero .row{display:flex;justify-content:space-between;align-items:flex-end;gap:14px}
+  .hero .big{font-family:Georgia,serif;font-weight:800;font-size:40px;line-height:1}
+  .hero .goal{text-align:right;font-size:12px;opacity:.75;line-height:1.5}
+  .hero .goal b{display:block;font-size:20px;font-family:Georgia,serif;opacity:1}
+  .bar{height:12px;background:rgba(255,255,255,.14);border-radius:20px;margin:18px 0 8px;overflow:hidden}
+  .bar > i{display:block;height:100%;border-radius:20px;background:linear-gradient(90deg,var(--moss-2),var(--amber));transition:width .5s ease}
+  .pace{display:flex;justify-content:space-between;font-size:12px;opacity:.85}
+  .pill{display:inline-block;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700}
+  .pill.ahead{background:rgba(122,200,150,.2);color:#a7e6bf}
+  .pill.behind{background:rgba(220,120,90,.22);color:#f0b39d}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px}
+  .stat .k{font-size:10px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;font-weight:700}
+  .stat .v{font-family:Georgia,serif;font-weight:800;font-size:21px;margin-top:3px}
+  .stat .v small{font-size:11px;color:var(--muted);font-weight:400}
+  .band{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px;margin-bottom:14px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .band .cell .k{font-size:10px;color:var(--muted);letter-spacing:.04em;text-transform:uppercase;font-weight:700}
+  .band .cell .v{font-family:Georgia,serif;font-weight:800;font-size:26px;margin-top:2px}
+  .band .cell .v .u{font-size:13px;color:var(--muted)}
+  .band .cell .sub2{font-size:11px;color:var(--muted);margin-top:3px}
+  .band .divider{grid-column:1 / -1;height:1px;background:var(--line);margin:2px 0}
+  .bonusrow{grid-column:1 / -1;display:flex;justify-content:space-between;align-items:center}
+  .bonusrow .lab{font-size:12px;font-weight:700}
+  .bonusrow .lab span{display:block;font-size:11px;color:var(--muted);font-weight:400}
+  .bonusrow .val{font-family:Georgia,serif;font-weight:800;font-size:22px;color:var(--moss)}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px 16px;margin-bottom:16px}
+  .card h2{font-family:Georgia,serif;font-size:18px;margin-bottom:2px}
+  .card .hint{font-size:12px;color:var(--muted);margin-bottom:14px}
+  .sal .valrow{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:10px}
+  .sal .salv{font-family:Georgia,serif;font-weight:800;font-size:26px}
+  .sal .costv{font-size:12px;color:var(--muted);text-align:right}
+  input[type=range]{-webkit-appearance:none;width:100%;height:6px;border-radius:6px;background:linear-gradient(90deg,var(--moss),var(--amber));outline:none;margin:4px 0 2px}
+  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:26px;height:26px;border-radius:50%;background:var(--ink);border:3px solid var(--paper);cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+  input[type=range]::-moz-range-thumb{width:26px;height:26px;border-radius:50%;background:var(--ink);border:3px solid var(--paper);cursor:pointer}
+  .rangelabels{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);margin-top:2px}
+  .superrow{display:flex;align-items:center;justify-content:space-between;margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+  .superrow label{font-size:13px;font-weight:600}
+  .superrow .sp{display:flex;align-items:center;gap:4px}
+  .superrow input{width:64px;height:34px;text-align:right;border:1px solid var(--line);border-radius:9px;padding:0 8px;font-size:15px;background:var(--paper)}
+  .wkdate{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:2px 0 12px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+  .wkdate label{font-size:13px;font-weight:600}
+  .wkdate input{height:36px;border:1px solid var(--line);border-radius:9px;padding:0 10px;font-size:14px;background:var(--paper);color:var(--ink);font-family:inherit}
+  .entry{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px dashed var(--line)}
+  .entry:last-of-type{border-bottom:none}
+  .entry .lab{font-size:14px;font-weight:600}
+  .entry .lab span{display:block;font-size:11px;color:var(--muted);font-weight:400}
+  .stepper{display:flex;align-items:center;gap:2px}
+  .stepper button{width:34px;height:34px;border:1px solid var(--line);background:var(--paper);border-radius:9px;font-size:18px;font-weight:700;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .stepper button:active{transform:scale(.94)}
+  .stepper input{width:46px;height:34px;text-align:center;border:1px solid var(--line);border-radius:9px;font-size:16px;font-weight:700;background:var(--paper);color:var(--ink);-moz-appearance:textfield}
+  .stepper input::-webkit-outer-spin-button,.stepper input::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  .adj{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}
+  .adj label{font-size:13px;font-weight:600}
+  .adj label span{display:block;font-size:11px;color:var(--muted);font-weight:400}
+  .adj .money{display:flex;align-items:center;gap:4px}
+  .adj input{width:80px;height:34px;text-align:right;border:1px solid var(--line);border-radius:9px;padding:0 8px;font-size:15px;background:var(--paper)}
+  .weektotal{display:flex;justify-content:space-between;align-items:baseline;margin-top:16px;padding-top:14px;border-top:2px solid var(--ink)}
+  .weektotal .k{font-size:13px;font-weight:700}
+  .weektotal .v{font-family:Georgia,serif;font-weight:800;font-size:26px}
+  .vs{font-size:12px;color:var(--muted);text-align:right;margin-top:2px}
+  .btn{width:100%;height:48px;border:none;border-radius:12px;background:var(--moss);color:#fff;font-size:15px;font-weight:700;cursor:pointer;margin-top:14px}
+  .btn:active{transform:scale(.99)}
+  .btn.ghost{background:transparent;color:var(--moss);border:1px solid var(--moss);height:40px;font-size:13px}
+  svg{width:100%;height:auto;display:block}
+  .legend{display:flex;gap:16px;font-size:12px;color:var(--muted);margin-top:6px}
+  .legend i{display:inline-block;width:14px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
+  .qgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+  .q{border:1px solid var(--line);border-radius:11px;padding:11px 9px;background:var(--paper);text-align:center}
+  .q.active{border-color:var(--moss);box-shadow:0 0 0 1px var(--moss) inset}
+  .q .ql{font-size:10px;color:var(--muted);font-weight:700}
+  .q .qr{font-family:Georgia,serif;font-weight:800;font-size:17px;margin-top:3px}
+  .q .qb{font-size:11px;font-weight:700;margin-top:3px}
+  .q .qb.on{color:var(--moss)}
+  .q .qb.off{color:var(--muted)}
+  .q .qw{font-size:9px;color:var(--muted);margin-top:2px}
+  .log{list-style:none}
+  .log li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .log li:last-child{border-bottom:none}
+  .log .wk{font-weight:700}
+  .log .mix{font-size:11px;color:var(--muted)}
+  .log .amt{font-family:Georgia,serif;font-weight:700}
+  .log .rt{font-size:11px;color:var(--muted)}
+  .log .del{border:none;background:none;color:var(--behind);font-size:12px;cursor:pointer;padding:4px 6px}
+  .empty{color:var(--muted);font-size:13px;text-align:center;padding:18px 0}
+  details.settings summary{cursor:pointer;font-size:13px;color:var(--muted);font-weight:700;list-style:none;padding:8px 0}
+  details.settings summary::-webkit-details-marker{display:none}
+  .rate{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px dashed var(--line);font-size:13px}
+  .rate input{width:90px;height:32px;text-align:right;border:1px solid var(--line);border-radius:8px;padding:0 8px;background:var(--paper)}
+  .note{font-size:11px;color:var(--muted);line-height:1.5;margin-top:12px;font-style:italic}
+  .note.leavehit{color:var(--behind);font-style:normal;font-weight:600}
+  .foot{text-align:center;font-size:11px;color:var(--muted);margin-top:20px;line-height:1.6}
+</style>
+</head>
+<body>
+  <div class="eyebrow">Full year &middot; <span id="weeksHead">46</span> working weeks</div>
+  <h1>Tracking to <span class="amt" id="goalHead">$320k</span></h1>
+  <div class="sub">Log each week's consults. It tracks revenue, your billing ratio, and the quarterly bonus, so year end is never a surprise.</div>
+
+  <div class="card" style="padding:16px">
+    <div class="valrow" style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px">
+      <div><div class="eyebrow">Year target</div><div class="salv" style="font-family:Georgia,serif;font-weight:800;font-size:26px" id="goalSlideShow">$320,000</div></div>
+      <div style="text-align:right;font-size:12px;color:var(--muted)" id="goalSlideNote">$6,957 / week over 46 weeks</div>
+    </div>
+    <input type="range" id="goalRange" min="250000" max="400000" step="5000" value="320000">
+    <div class="rangelabels"><span>$250k</span><span>$400k</span></div>
+  </div>
+
+
+  <div class="hero">
+    <div class="row">
+      <div><div class="eyebrow" style="color:rgba(255,255,255,.55)">Billed year to date</div><div class="big" id="ytd">$0</div></div>
+      <div class="goal">Goal<b id="goalAmt">$320,000</b><span id="pct">0% there</span></div>
+    </div>
+    <div class="bar"><i id="barFill" style="width:0%"></i></div>
+    <div class="pace"><span id="paceState">Log your first week to begin</span><span id="weeksLeft">46 weeks left</span></div>
+  </div>
+
+  <div class="stats">
+    <div class="stat"><div class="k">Weeks logged</div><div class="v" id="sWeeks">0<small>/46</small></div></div>
+    <div class="stat"><div class="k">Avg / week</div><div class="v" id="sAvg">$0</div></div>
+    <div class="stat"><div class="k">Need / week</div><div class="v" id="sNeed">$0</div></div>
+  </div>
+
+  <div class="band">
+    <div class="cell"><div class="k">Billing ratio · YTD avg</div><div class="v" id="ratioAvg">—<span class="u">%</span></div><div class="sub2">(salary + super) ÷ revenue</div></div>
+    <div class="cell"><div class="k">This week's ratio</div><div class="v" id="ratioWeek">—<span class="u">%</span></div><div class="sub2" id="ratioWeekNote">lower is better</div></div>
+    <div class="divider"></div>
+    <div class="bonusrow"><div class="lab">Current quarter bonus<span id="qNote">on this quarter's average ratio</span></div><div class="val" id="qBonusNow">$0</div></div>
+    <div class="note leavehit" id="leaveImpact" style="grid-column:1 / -1;display:none;margin-top:0"></div>
+  </div>
+
+  <div class="card sal">
+    <h2>Your pay</h2>
+    <div class="hint">Slide as your salary changes. This drives every ratio and the bonus.</div>
+    <div class="valrow"><div class="salv" id="salShow">$90,000</div><div class="costv" id="costShow"></div></div>
+    <input type="range" id="salRange" min="80000" max="140000" step="500" value="90000">
+    <div class="rangelabels"><span>$80k</span><span>$140k</span></div>
+    <div class="superrow"><label>Super guarantee</label><div class="sp"><input type="number" id="superPct" value="12.5" step="0.5">%</div></div>
+    <div class="superrow" style="border:none;padding-top:8px;margin-top:6px"><label>Total package incl. bonuses<span style="display:block;font-size:11px;color:var(--muted);font-weight:400">salary + super + bonuses earned</span></label><div class="salv" style="font-size:20px" id="packageShow">$101,250</div></div>
+  </div>
+
+  <div class="card">
+    <h2>This week</h2>
+    <div class="hint" id="weekLabel">Week 1</div>
+    <div class="wkdate"><label for="weekDate">Week starting (Monday)</label><input type="date" id="weekDate"></div>
+    <div class="entry"><div class="lab">Initial 45 min<span>New patients · <em id="r0">$219</em></span></div><div class="stepper" data-key="init"><button data-d="-1">&minus;</button><input type="number" value="0" min="0" data-inp="init"><button data-d="1">+</button></div></div>
+    <div class="entry"><div class="lab">Performance 45 min<span>Rehab / performance · <em id="r1">$185</em></span></div><div class="stepper" data-key="perf45"><button data-d="-1">&minus;</button><input type="number" value="0" min="0" data-inp="perf45"><button data-d="1">+</button></div></div>
+    <div class="entry"><div class="lab">Performance 60 min<span>Extended session · <em id="r2">$200</em></span></div><div class="stepper" data-key="perf60"><button data-d="-1">&minus;</button><input type="number" value="0" min="0" data-inp="perf60"><button data-d="1">+</button></div></div>
+    <div class="entry"><div class="lab">Extended 45 min<span>Longer follow-up · <em id="r3">$185</em></span></div><div class="stepper" data-key="ext45"><button data-d="-1">&minus;</button><input type="number" value="0" min="0" data-inp="ext45"><button data-d="1">+</button></div></div>
+    <div class="entry"><div class="lab">Standard follow-up<span>30 min · <em id="r4">$166</em></span></div><div class="stepper" data-key="fu30"><button data-d="-1">&minus;</button><input type="number" value="0" min="0" data-inp="fu30"><button data-d="1">+</button></div></div>
+    <div class="adj"><label>Discounts / adjustments<span>Knock off for package deals, Tier 2 etc</span></label><div class="money"><b>&minus;$</b><input type="number" value="0" min="0" id="adjInput" placeholder="0"></div></div>
+    <div class="adj"><label>Leave hours this week<span>Paid but not billed. Doesn't change the total, explains a low week</span></label><div class="money"><input type="number" value="0" min="0" id="leaveInput" placeholder="0"><b style="color:var(--muted)">hrs</b></div></div>
+    <div class="weektotal"><div><div class="k">WEEK ESTIMATE</div><div class="vs" id="vsTarget">&nbsp;</div></div><div class="v" id="weekTotal">$0</div></div>
+    <button class="btn" id="logBtn">Log this week</button>
+  </div>
+
+  <div class="card">
+    <h2>Quarterly bonus</h2>
+    <div class="hint">Every 12 weeks. Bonus is set by that quarter's average billing ratio.</div>
+    <div class="qgrid" id="qGrid"></div>
+    <div class="note" id="bonusScaleNote"></div>
+  </div>
+
+  <div class="card">
+    <h2>The line</h2>
+    <div class="hint">Cumulative billings against the pace you need for the goal.</div>
+    <svg id="chart" viewBox="0 0 320 170" preserveAspectRatio="xMidYMid meet"></svg>
+    <div class="legend"><span><i style="background:var(--moss)"></i>You</span><span><i style="background:var(--clay)"></i>Target pace</span></div>
+  </div>
+
+  <div class="card">
+    <h2>Weeks logged</h2>
+    <div class="hint">Tap remove if you mis-entered a week.</div>
+    <ul class="log" id="logList"><li class="empty">No weeks logged yet.</li></ul>
+  </div>
+
+  <div class="card">
+    <details class="settings">
+      <summary>Rates, goal &amp; length · tap to edit</summary>
+      <div style="margin-top:8px">
+        <div class="rate">Initial 45 min <span>$<input type="number" id="setInit" value="219"></span></div>
+        <div class="rate">Performance 45 min <span>$<input type="number" id="setPerf45" value="185"></span></div>
+        <div class="rate">Performance 60 min <span>$<input type="number" id="setPerf60" value="200"></span></div>
+        <div class="rate">Extended 45 min <span>$<input type="number" id="setExt45" value="185"></span></div>
+        <div class="rate">Standard follow-up <span>$<input type="number" id="setFu30" value="166"></span></div>
+        <div class="rate">Annual goal <span>$<input type="number" id="setGoal" value="320000"></span></div>
+        <div class="rate">Working weeks <span><input type="number" id="setWeeks" value="46"></span></div>
+        <div class="rate">Quarter length (weeks) <span><input type="number" id="setQlen" value="12"></span></div>
+        <button class="btn ghost" id="saveSettings" style="margin-top:12px">Save</button>
+      </div>
+    </details>
+    <div class="note">Estimates use average rates, so totals are a pacing guide, not your exact ledger. Use the discount field, or your real revenue once you have access, to true it up. Bonus is on (salary + super) ÷ revenue and the bonus itself is not counted inside that ratio.</div>
+  </div>
+
+  <div class="card"><h2>Backup</h2><div class="hint">Saved only in this browser on this device. Export regularly so a wiped browser doesn't lose your year. Import restores or moves it to another device.</div><div style="display:flex;gap:10px"><button class="btn" id="exportBtn" style="margin-top:0">Export my data</button><button class="btn ghost" id="importBtn" style="margin-top:0;flex:0 0 auto;width:auto;padding:0 16px">Import</button></div><input type="file" id="importFile" accept="application/json,.json" style="display:none"></div>
+  <div class="foot">Saved on this device only, in this browser.<br><button class="btn ghost" id="resetAll" style="margin-top:10px;color:var(--behind);border-color:var(--behind);max-width:220px">Reset everything</button></div>
+
+<script>
+(function(){
+  "use strict";
+  var LS="reuben_billing_v2";
+  var TYPES=[{k:"init",disp:"r0"},{k:"perf45",disp:"r1"},{k:"perf60",disp:"r2"},{k:"ext45",disp:"r3"},{k:"fu30",disp:"r4"}];
+  var BONUS=[[36,3000],[37,2500],[38,2000],[39,1500],[40,1000],[41,750],[42,500],[43,250]];
+  function bonusFor(r){ if(r==null||isNaN(r))return 0; for(var i=0;i<BONUS.length;i++){if(r<=BONUS[i][0])return BONUS[i][1];} return 0; }
+  var state={rates:{init:219,perf45:185,perf60:200,ext45:185,fu30:166},goal:320000,weeks:46,qlen:12,salary:90000,superPct:12.5,contractHours:38,weeks_logged:[]};
+  function load(){try{var raw=localStorage.getItem(LS);if(raw){var p=JSON.parse(raw);for(var k in p){if(p.hasOwnProperty(k))state[k]=p[k];}}}catch(e){}}
+  function save(){try{localStorage.setItem(LS,JSON.stringify(state));}catch(e){}}
+  function fmt(n){return "$"+Math.round(n).toLocaleString("en-AU");}
+  function fmtK(n){return "$"+Math.round(n/1000)+"k";}
+
+  function mondayOf(d){var x=new Date(d);var day=(x.getDay()+6)%7;x.setDate(x.getDate()-day);x.setHours(12,0,0,0);return x;}
+  function isoDate(d){var x=new Date(d);var m=(''+(x.getMonth()+1)).padStart(2,'0');var day=(''+x.getDate()).padStart(2,'0');return x.getFullYear()+'-'+m+'-'+day;}
+  function fmtDate(iso){if(!iso)return '';var p=iso.split('-');if(p.length!==3)return iso;var mm=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];return parseInt(p[2],10)+' '+mm[parseInt(p[1],10)-1]+' '+p[0];}
+  var current={init:0,perf45:0,perf60:0,ext45:0,fu30:0},adj=0,leaveHrs=0;
+  function weeklyCost(){return state.salary*(1+state.superPct/100)/52;}
+  function weekEstimate(){var t=0;for(var i=0;i<TYPES.length;i++){var k=TYPES[i].k;t+=current[k]*(state.rates[k]||0);}t-=adj;return t<0?0:t;}
+  function ytd(){var t=0;for(var i=0;i<state.weeks_logged.length;i++)t+=state.weeks_logged[i].total;return t;}
+  function ratioOf(rev){if(!rev)return null;return weeklyCost()/rev*100;}
+  function quarters(){var qs=[],ql=state.qlen||12,totalQ=Math.ceil(state.weeks/ql);
+    var fullWk=state.contractHours||38; // hours in a normal full week
+    for(var q=0;q<totalQ;q++){var start=q*ql,slice=state.weeks_logged.slice(start,start+ql),rev=0,leaveH=0;
+      for(var i=0;i<slice.length;i++){rev+=slice[i].total;leaveH+=(slice[i].leave||0);}
+      var wk=slice.length,cost=weeklyCost()*wk,ratio=rev>0?cost/rev*100:null,bonus=(wk>0&&ratio!=null)?bonusFor(ratio):0;
+      // Leave-adjusted: estimate revenue you'd have billed in the leave hours at your worked $/hr,
+      // then what the ratio (and bonus) would look like WITHOUT the leave drag.
+      var workedHrs=(wk*fullWk)-leaveH;
+      var perHr = workedHrs>0 ? rev/workedHrs : 0;
+      var revNoLeave = rev + perHr*leaveH; // what you'd have billed at your own worked rate
+      var ratioNoLeave = revNoLeave>0 ? cost/revNoLeave*100 : null;
+      var bonusNoLeave = (wk>0&&ratioNoLeave!=null)?bonusFor(ratioNoLeave):0;
+      qs.push({idx:q,weeks:wk,qlen:ql,rev:rev,ratio:ratio,bonus:bonus,full:wk>=ql,
+               leaveH:leaveH,ratioNoLeave:ratioNoLeave,bonusNoLeave:bonusNoLeave});}
+    return qs;}
+  function currentQuarterIndex(){var ql=state.qlen||12;return Math.floor(state.weeks_logged.length/ql);}
+  function bonusesEarned(){var qs=quarters(),t=0;for(var i=0;i<qs.length;i++){if(qs[i].full)t+=qs[i].bonus;}return t;}
+
+  function render(){
+    for(var i=0;i<TYPES.length;i++){var el=document.getElementById(TYPES[i].disp);if(el)el.textContent="$"+state.rates[TYPES[i].k];}
+    var cost=state.salary*(1+state.superPct/100);
+    document.getElementById("salShow").textContent=fmt(state.salary);
+    document.getElementById("costShow").textContent="+ super = "+fmt(cost)+" · "+fmt(cost/52)+"/wk";
+    document.getElementById("packageShow").textContent=fmt(cost+bonusesEarned());
+    var wk=weekEstimate();
+    document.getElementById("weekTotal").textContent=fmt(wk);
+    var perNeed=state.goal/state.weeks,diff=wk-perNeed,vt=document.getElementById("vsTarget");
+    if(wk===0)vt.innerHTML="&nbsp;";
+    else if(diff>=0)vt.innerHTML='<span class="pill ahead">'+fmt(diff)+' over target</span>';
+    else vt.innerHTML='<span class="pill behind">'+fmt(-diff)+' under target</span>';
+    var rW=ratioOf(wk);
+    document.getElementById("ratioWeek").innerHTML=(rW!=null?rW.toFixed(1):"—")+'<span class="u">%</span>';
+    if(rW!=null){var b=bonusFor(rW);document.getElementById("ratioWeekNote").textContent=b>0?("that pace = $"+b+" bonus"):"above bonus range";}
+    else document.getElementById("ratioWeekNote").textContent="lower is better";
+    var total=ytd();
+    document.getElementById("ytd").textContent=fmt(total);
+    document.getElementById("goalAmt").textContent=fmt(state.goal);
+    document.getElementById("goalHead").textContent=fmtK(state.goal);
+    document.getElementById("weeksHead").textContent=state.weeks;
+    var pct=state.goal>0?Math.min(100,total/state.goal*100):0;
+    document.getElementById("barFill").style.width=pct.toFixed(1)+"%";
+    document.getElementById("pct").textContent=Math.round(pct)+"% there";
+    var gsShow=document.getElementById("goalSlideShow");if(gsShow){gsShow.textContent=fmt(state.goal);}
+    var gsNote=document.getElementById("goalSlideNote");if(gsNote){gsNote.textContent=fmt(state.goal/state.weeks)+" / week over "+state.weeks+" weeks";}
+    var gr=document.getElementById("goalRange");if(gr&&parseInt(gr.value,10)!==state.goal){if(state.goal>=250000&&state.goal<=400000)gr.value=state.goal;}
+    var logged=state.weeks_logged.length,remaining=Math.max(0,state.weeks-logged);
+    document.getElementById("weeksLeft").textContent=remaining+" week"+(remaining===1?"":"s")+" left";
+    document.getElementById("weekLabel").textContent="Week "+(logged+1);
+    var shouldHave=perNeed*logged,ps=document.getElementById("paceState");
+    if(logged===0)ps.textContent="Log your first week to begin";
+    else{var gap=total-shouldHave;ps.innerHTML=gap>=0?'<span class="pill ahead">'+fmt(gap)+' ahead of pace</span>':'<span class="pill behind">'+fmt(-gap)+' behind pace</span>';}
+    document.getElementById("sWeeks").innerHTML=logged+'<small>/'+state.weeks+'</small>';
+    document.getElementById("sAvg").textContent=logged?fmt(total/logged):"$0";
+    var need=remaining>0?(state.goal-total)/remaining:0;
+    document.getElementById("sNeed").textContent=remaining>0?fmt(Math.max(0,need)):(total>=state.goal?"Done":"—");
+    var ytdRatio=total>0?(weeklyCost()*logged)/total*100:null;
+    document.getElementById("ratioAvg").innerHTML=(ytdRatio!=null?ytdRatio.toFixed(1):"—")+'<span class="u">%</span>';
+    var qs=quarters(),cqi=currentQuarterIndex(),cq=qs[cqi],qb=document.getElementById("qBonusNow");
+    if(cq&&cq.weeks>0&&cq.ratio!=null){qb.textContent=fmt(cq.bonus);document.getElementById("qNote").textContent="quarter avg ratio "+cq.ratio.toFixed(1)+"% · "+cq.weeks+"/"+cq.qlen+" weeks in";}
+    else{qb.textContent="$0";document.getElementById("qNote").textContent="log weeks to project this quarter";}
+    var li=document.getElementById("leaveImpact");
+    if(li){
+      if(cq&&cq.leaveH>0&&cq.ratioNoLeave!=null){
+        var band=cq.bonusNoLeave-cq.bonus;
+        var msg="Leave this quarter: "+cq.leaveH+" hrs. Without it your ratio would be ~"+cq.ratioNoLeave.toFixed(1)+"%";
+        if(band>0){ msg+=" — the leave is costing you about "+fmt(band)+" of bonus."; li.className="note leavehit"; }
+        else { msg+=" (no bonus band change)."; li.className="note"; }
+        li.textContent=msg; li.style.display="block";
+      } else { li.style.display="none"; }
+    }
+    drawQuarters(qs,cqi);drawChart();drawLog();
+    var parts=[];for(var z=0;z<BONUS.length;z++)parts.push("<="+BONUS[z][0]+"% $"+BONUS[z][1]);
+    document.getElementById("bonusScaleNote").textContent="Scale: "+parts.join("  ·  ")+"  ·  >43% nil. Ratio is (salary+super)÷revenue.";
+    save();
+  }
+  function drawQuarters(qs,cqi){var g=document.getElementById("qGrid"),html="";
+    for(var i=0;i<qs.length;i++){var q=qs[i],active=(i===cqi&&q.weeks>0)?" active":"",rtxt=q.ratio!=null?q.ratio.toFixed(1)+"%":"—",btxt=q.weeks>0?("$"+q.bonus):"$0",bcls=q.bonus>0?"on":"off";
+      html+='<div class="q'+active+'"><div class="ql">Q'+(i+1)+'</div><div class="qr">'+rtxt+'</div><div class="qb '+bcls+'">'+btxt+'</div><div class="qw">'+q.weeks+'/'+q.qlen+' wks</div></div>';}
+    g.innerHTML=html;}
+  function drawChart(){var svg=document.getElementById("chart"),W=320,H=170,padL=6,padR=6,padT=10,padB=16,n=state.weeks,goal=state.goal,iW=W-padL-padR,iH=H-padT-padB;
+    function x(i){return padL+(i/n)*iW;}function y(v){return padT+iH-(goal>0?(v/goal):0)*iH;}
+    var target='M '+x(0)+' '+y(0)+' L '+x(n)+' '+y(goal),cum=0,d='M '+x(0)+' '+y(0);
+    for(var i=0;i<state.weeks_logged.length;i++){cum+=state.weeks_logged[i].total;d+=' L '+x(i+1)+' '+y(cum);}
+    var area=state.weeks_logged.length?'<path d="'+d+' L '+x(state.weeks_logged.length)+' '+y(0)+' L '+x(0)+' '+y(0)+' Z" fill="rgba(47,107,79,.10)"/>':'',s='';
+    s+='<line x1="'+padL+'" y1="'+y(goal)+'" x2="'+(W-padR)+'" y2="'+y(goal)+'" stroke="#d8d0c0" stroke-width="1" stroke-dasharray="2 3"/>';
+    s+='<text x="'+padL+'" y="'+(y(goal)-4)+'" font-size="8" fill="#6c6455">'+fmtK(goal)+'</text>'+area;
+    s+='<path d="'+target+'" stroke="#c46a45" stroke-width="1.5" fill="none" stroke-dasharray="3 3"/>';
+    if(state.weeks_logged.length){s+='<path d="'+d+'" stroke="#2f6b4f" stroke-width="2.5" fill="none" stroke-linejoin="round"/><circle cx="'+x(state.weeks_logged.length)+'" cy="'+y(cum)+'" r="3.5" fill="#2f6b4f"/>';}
+    s+='<line x1="'+padL+'" y1="'+y(0)+'" x2="'+(W-padR)+'" y2="'+y(0)+'" stroke="#d8d0c0" stroke-width="1"/>';
+    svg.innerHTML=s;}
+  function drawLog(){var ul=document.getElementById("logList");
+    if(!state.weeks_logged.length){ul.innerHTML='<li class="empty">No weeks logged yet.</li>';return;}
+    var html="";for(var i=state.weeks_logged.length-1;i>=0;i--){var w=state.weeks_logged[i],c=w.counts,pts=c.init+c.perf45+c.perf60+c.ext45+c.fu30,perf=c.init+c.perf45+c.perf60+c.ext45,rt=ratioOf(w.total);
+      html+='<li><div><div class="wk">Week '+w.n+(w.date?' · '+fmtDate(w.date):'')+'</div><div class="mix">'+pts+' patients · '+perf+' ext/perf, '+c.fu30+' follow-ups'+(w.adj?' − $'+w.adj:'')+(w.leave?' · '+w.leave+' leave hrs':'')+'</div><div class="rt">ratio '+(rt!=null?rt.toFixed(1)+'%':'—')+'</div></div><div style="display:flex;align-items:center;gap:6px"><span class="amt">'+fmt(w.total)+'</span><button class="del" data-i="'+i+'">remove</button></div></li>';}
+    ul.innerHTML=html;
+    ul.querySelectorAll(".del").forEach(function(b){b.addEventListener("click",function(){var idx=parseInt(this.getAttribute("data-i"),10);state.weeks_logged.splice(idx,1);for(var m=0;m<state.weeks_logged.length;m++)state.weeks_logged[m].n=m+1;render();});});}
+  document.querySelectorAll(".stepper").forEach(function(st){var key=st.getAttribute("data-key"),inp=st.querySelector("input");
+    st.querySelectorAll("button").forEach(function(b){b.addEventListener("click",function(){var d=parseInt(b.getAttribute("data-d"),10);current[key]=Math.max(0,(parseInt(inp.value,10)||0)+d);inp.value=current[key];render();});});
+    inp.addEventListener("input",function(){current[key]=Math.max(0,parseInt(inp.value,10)||0);render();});});
+  document.getElementById("adjInput").addEventListener("input",function(){adj=Math.max(0,parseFloat(this.value)||0);render();});
+  document.getElementById("leaveInput").addEventListener("input",function(){leaveHrs=Math.max(0,parseFloat(this.value)||0);render();});
+  document.getElementById("salRange").addEventListener("input",function(){state.salary=parseInt(this.value,10);render();});
+  document.getElementById("goalRange").addEventListener("input",function(){state.goal=parseInt(this.value,10);render();});
+  document.getElementById("superPct").addEventListener("input",function(){state.superPct=Math.max(0,parseFloat(this.value)||0);render();});
+  document.getElementById("logBtn").addEventListener("click",function(){var total=weekEstimate();
+    if(total<=0){var s=this;this.textContent="Add some consults first";setTimeout(function(){s.textContent="Log this week";},1400);return;}
+    var di=document.getElementById("weekDate");var wdate=di&&di.value?isoDate(mondayOf(di.value)):isoDate(mondayOf(new Date()));
+    state.weeks_logged.push({date:wdate,counts:Object.assign({},current),adj:adj,leave:leaveHrs,total:total});
+    state.weeks_logged.sort(function(a,b){return (a.date||'')<(b.date||'')?-1:((a.date||'')>(b.date||'')?1:0);});
+    for(var m=0;m<state.weeks_logged.length;m++)state.weeks_logged[m].n=m+1;
+    current={init:0,perf45:0,perf60:0,ext45:0,fu30:0};adj=0;leaveHrs=0;
+    document.querySelectorAll(".stepper input").forEach(function(i){i.value=0;});
+    document.getElementById("adjInput").value="";document.getElementById("leaveInput").value="";
+    // advance date field to next Monday for convenience
+    if(di&&di.value){var nx=mondayOf(di.value);nx.setDate(nx.getDate()+7);di.value=isoDate(nx);}
+    render();window.scrollTo({top:0,behavior:"smooth"});});
+  document.getElementById("saveSettings").addEventListener("click",function(){
+    state.rates.init=+document.getElementById("setInit").value||0;state.rates.perf45=+document.getElementById("setPerf45").value||0;
+    state.rates.perf60=+document.getElementById("setPerf60").value||0;state.rates.ext45=+document.getElementById("setExt45").value||0;
+    state.rates.fu30=+document.getElementById("setFu30").value||0;state.goal=+document.getElementById("setGoal").value||320000;
+    state.weeks=parseInt(document.getElementById("setWeeks").value,10)||46;state.qlen=parseInt(document.getElementById("setQlen").value,10)||12;
+    render();var s=this;this.textContent="Saved ✓";setTimeout(function(){s.textContent="Save";},1300);});
+  document.getElementById("resetAll").addEventListener("click",function(){if(confirm("Clear all logged weeks and reset? This can't be undone.")){localStorage.removeItem(LS);location.reload();}});
+  function fillSettings(){document.getElementById("setInit").value=state.rates.init;document.getElementById("setPerf45").value=state.rates.perf45;
+    document.getElementById("setPerf60").value=state.rates.perf60;document.getElementById("setExt45").value=state.rates.ext45;
+    document.getElementById("setFu30").value=state.rates.fu30;document.getElementById("setGoal").value=state.goal;
+    document.getElementById("setWeeks").value=state.weeks;document.getElementById("setQlen").value=state.qlen;
+    document.getElementById("salRange").value=state.salary;document.getElementById("superPct").value=state.superPct;}
+  // ---- export / import ----
+  document.getElementById("exportBtn").addEventListener("click",function(){
+    try{
+      var data=JSON.stringify(state,null,2);
+      var blob=new Blob([data],{type:"application/json"});
+      var url=URL.createObjectURL(blob);
+      var a=document.createElement("a");
+      var d=new Date();
+      a.href=url; a.download="billing-tracker-"+isoDate(d)+".json";
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function(){URL.revokeObjectURL(url);},500);
+      var s=this; this.textContent="Downloaded ✓"; setTimeout(function(){s.textContent="Export my data";},1500);
+    }catch(e){ alert("Export failed: "+e.message); }
+  });
+  document.getElementById("importBtn").addEventListener("click",function(){ document.getElementById("importFile").click(); });
+  document.getElementById("importFile").addEventListener("change",function(ev){
+    var file=ev.target.files&&ev.target.files[0]; if(!file)return;
+    var rd=new FileReader();
+    rd.onload=function(){
+      try{
+        var p=JSON.parse(rd.result);
+        if(!p||!p.weeks_logged){ alert("That doesn't look like a tracker backup file."); return; }
+        if(!confirm("Import this backup? It will replace your current data.")) return;
+        for(var k in p){ if(p.hasOwnProperty(k)) state[k]=p[k]; }
+        fillSettings(); render();
+        alert("Imported "+ (p.weeks_logged.length) +" week(s).");
+      }catch(e){ alert("Couldn't read that file: "+e.message); }
+    };
+    rd.readAsText(file);
+    ev.target.value="";
+  });
+
+  load();fillSettings();
+  (function(){var di=document.getElementById("weekDate");if(di&&!di.value){di.value=isoDate(mondayOf(new Date()));}})();
+  render();
+})();
+</script>
+</body>
+</html>
